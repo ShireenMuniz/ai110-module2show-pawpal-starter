@@ -154,11 +154,16 @@ PawPal+ runs as a Streamlit app (`python -m streamlit run app.py`).
 **Sample CLI output** (`python main.py`):
 
 UML Diagram:
+
+
 ![alt text](image-1.png)
 
 **Output of Main.py**
+
+
 ![alt text](image.png)
 
 
 **Screenshot or video** *(optional)*: 
+
 ![alt text](image-2.png)
