@@ -80,6 +80,10 @@ rows = [
 ]
 if rows:
     st.table(rows)
+    with st.expander("View tasks sorted by time"):
+        for t in Scheduler.sort_by_time(owner.get_all_tasks()):
+            st.write(f"- **{t.preferred_time or '--:--'}** {t.title} · _{t.priority}_")
+
 else:
     st.info("No tasks yet.")
 
@@ -90,18 +94,32 @@ st.subheader("Build Schedule")
 available = st.number_input("Minutes available today", 30, 1440, 480)
 if st.button("Generate schedule"):
     scheduler = Scheduler(start_time="08:00", available_minutes=int(available))
+
+    # Surface conflicts first so the owner sees clashes before the plan.
+    conflicts = scheduler.detect_conflicts(owner)
+    if conflicts:
+        for c in conflicts:
+            st.warning(f"⚠️ {c}")
+
     plan = scheduler.build_daily_plan(owner)
     if plan.items:
-        for item in plan.items:
-            st.write(
-                f"**{item.start_time}** — {item.task.title} "
-                f"({item.task.duration_minutes} min) for {item.pet.name} "
-                f"· _{item.task.priority}_"
-            )
-            st.caption(item.reason)
-        st.success(f"Total: {plan.total_minutes()} min, {len(plan.items)} tasks")
+        st.success(f"Planned {len(plan.items)} tasks · {plan.total_minutes()} min total")
+        st.table([
+            {
+                "time": item.start_time,
+                "task": item.task.title,
+                "pet": item.pet.name,
+                "min": item.task.duration_minutes,
+                "priority": item.task.priority,
+            }
+            for item in plan.items
+        ])
+        with st.expander("Why this plan?"):
+            for item in plan.items:
+                st.caption(f"{item.start_time} — {item.task.title}: {item.reason}")
     else:
         st.info("No tasks to schedule yet.")
+
     if plan.skipped:
         st.warning("Skipped (didn't fit):")
         for pet, task, reason in plan.skipped:

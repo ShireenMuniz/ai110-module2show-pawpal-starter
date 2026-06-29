@@ -14,13 +14,24 @@ Your job is to design the system first (UML), then implement the logic in Python
 
 ## What you will build
 
-Your final app should:
+## ✨ Features
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+- **Priority-aware planning** — schedules high-priority care before low-priority enrichment.
+- **Time-budget packing** — fits tasks into the minutes you have; skips overflow with a reason.
+- **Sort by time** — view tasks chronologically (`Scheduler.sort_by_time`).
+- **Filtering** — by pet or completion status (`Scheduler.filter_tasks`).
+- **Conflict warnings** — flags tasks scheduled at the same time (`Scheduler.detect_conflicts`).
+- **Recurring tasks** — completing a daily/weekly task auto-creates its next occurrence.
+- **Explainable plans** — every scheduled item includes a one-line reason.
+
+## 🎨 Output Formatting
+
+The CLI demo (`main.py`) renders the daily plan as a boxed table using the **tabulate** library (`tablefmt="rounded_outline"`). Helper functions add visual cues:
+- `task_emoji(title)` — picks an emoji from the task title (🐕 walk, 🍽️ feed, 💊 med, 🛁 groom, 🎾 play, 🧹 litter).
+- `PRIORITY_EMOJI` — color dots for priority (🔴 high, 🟡 medium, 🟢 low).
+
+This makes the schedule scannable at a glance instead of a flat text list.
+
 
 ## Getting started
 
@@ -123,12 +134,30 @@ multi-day recurrence streaks.
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+PawPal+ runs as a Streamlit app (`python -m streamlit run app.py`).
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+**What you can do:**
+- Set the owner name and add one or more pets (name + species).
+- Add care tasks to a chosen pet: title, duration, priority, and an optional preferred time.
+- See all current tasks in a table, and a "sorted by time" view.
+- Generate a daily schedule and read why each task was placed where it was.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+**Example workflow:**
+1. Enter owner "Jordan" and add pets **Biscuit** (dog) and **Mochi** (cat).
+2. Add tasks: Biscuit "Morning walk" (30 min, high, 08:00) and Mochi "Feeding" (10 min, high, 08:00).
+3. Click **Generate schedule**.
+4. PawPal+ shows a ⚠️ conflict warning (both want 08:00), then the ordered plan with reasons.
+5. Add a low-priority "Enrichment play" and regenerate to see it slotted after the high-priority tasks.
+
+**Scheduler behaviors shown:** priority ordering, preferred-time placement, exact-time conflict warnings, time-budget skipping and per-task reasoning.
+
+**Sample CLI output** (`python main.py`):
+
+UML Diagram:
+![alt text](image-1.png)
+
+**Output of Main.py**
+![alt text](image.png)
+
+
+**Screenshot or video** *(optional)*: 
