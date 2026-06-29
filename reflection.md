@@ -2,15 +2,20 @@
 
 ## 1. System Design
 
-**a. Initial design**
+**Core user actions**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+1. Add a pet — the owner registers a pet with a name and species.
+2. Add a care task — attach an activity (duration, priority, optional preferred time) to a pet.
+3. Generate today's schedule — produce an ordered daily plan that fits tasks into the available time by priority, and explain the choices.
+
+
+**a. Initial design**
+I chose four classes. Task is a dataclass holding one activity's details (duration,priority, frequency, preferred time, completion). Pet is a dataclass that owns a list of Tasks. Owner manages a list of Pets and can flatten every task across pets. Scheduler is the "brain": it reads the owner's tasks and produces an ordered DailyPlan, sorting by priority and packing tasks into an available-time budget.
+
 
 **b. Design changes**
-
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+Yes. My skeleton had Scheduler return a raw list, but during implementation I added two helper dataclasses — ScheduledItem (a task + start time + reason) and DailyPlan (scheduled items + skipped tasks). This made the output easy to explain and let me track skipped tasks separately. I also added a preferred_time tie-breaker so fixed-time tasks (like feeding at
+09:00) land in their slot instead of being packed purely by priority.
 
 ---
 

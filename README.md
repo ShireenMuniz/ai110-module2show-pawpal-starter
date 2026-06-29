@@ -44,30 +44,50 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Daily plan for Jordan's pets:
 
-```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
-```
+08:00 — Morning walk (30 min) for Biscuit [priority: high] — high priority owner asked for ~08:00.
+09:00 — Feeding (10 min) for Biscuit [priority: high] — high priority, owner asked for ~09:00.
+09:10 — Feeding (10 min) for Mochi [priority: high] — high priority, slotted in next available time.
+09:20 — Litter cleanup (15 min) for Mochi [priority: medium] — medium priority, slotted in next available time.
+09:35 — Enrichment play (20 min) for Biscuit [priority: low] — low priority, slotted in next available time.
+
+Total scheduled: 85 min (5 tasks, 0 skipped)
+
 
 ## 🧪 Testing PawPal+
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
+========================= test session starts ==========================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: C:\Users\shire\Documents\CodePathOrg\AI\ai110-module2show-pawpal-starter
+plugins: anyio-4.11.0
+collected 4 items                                                       
+
+tests\test_pawpal.py ....                                         [100%]
+
+========================== 4 passed in 0.11s ===========================
 
 # Run with coverage:
 pytest --cov
-```
 
-Sample test output:
+python -m pytest -v
+========================= test session starts ==========================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\shire\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\shire\Documents\CodePathOrg\AI\ai110-module2show-pawpal-starter
+plugins: anyio-4.11.0
+collected 4 items                                                       
 
-```
-# Paste your pytest output here
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED    [ 25%]
+tests/test_pawpal.py::test_adding_task_increases_pet_task_count PASSED [ 50%]
+tests/test_pawpal.py::test_scheduler_orders_high_priority_first PASSED [ 75%]
+tests/test_pawpal.py::test_scheduler_skips_tasks_that_do_not_fit PASSED [100%]
+
+========================== 4 passed in 0.04s ===========================
+
 ```
 
 ## 📐 Smarter Scheduling
