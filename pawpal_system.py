@@ -5,7 +5,9 @@ UI-agnostic so it can be driven from a CLI demo (main.py), tests, or Streamlit (
 
 from __future__ import annotations
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from typing import List, Optional
+
 
 # Priority -> sort weight (lower = scheduled earlier / preferred).
 PRIORITY_WEIGHT = {"high": 0, "medium": 1, "low": 2}
@@ -20,6 +22,7 @@ class Task:
     frequency: str = "daily"            # "daily" or "weekly"
     preferred_time: Optional[str] = None  # "HH:MM" for a fixed slot
     completed: bool = False
+    due_date: Optional[date] = None  # when this task is next due
 
     def mark_complete(self) -> None:
         """Mark this task as done for the day."""
@@ -32,6 +35,20 @@ class Task:
     def priority_weight(self) -> int:
         """Numeric sort weight for this task's priority (unknown -> medium)."""
         return PRIORITY_WEIGHT.get(self.priority, PRIORITY_WEIGHT["medium"])
+
+    def next_occurrence(self) -> "Task":
+        """Return a fresh, uncompleted copy of this task due on the next date."""
+        base = self.due_date or date.today()
+        step = timedelta(weeks=1) if self.frequency == "weekly" else timedelta(days=1)
+        return Task(
+            title=self.title,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            frequency=self.frequency,
+            preferred_time=self.preferred_time,
+            completed=False,
+            due_date=base + step,
+        )
 
 
 @dataclass
@@ -49,6 +66,13 @@ class Pet:
     def task_count(self) -> int:
         """How many tasks this pet currently has."""
         return len(self.tasks)
+
+    def complete_task(self, task: Task) -> Optional[Task]:
+        """Mark a task complete; if it recurs, add and return its next occurrence."""
+        task.mark_complete()
+        if task.frequency in ("daily", "weekly"):
+            return self.add_task(task.next_occurrence())
+        return None
 
 
 @dataclass
@@ -161,3 +185,38 @@ class Scheduler:
         for pet, task, reason in plan.skipped:
             lines.append(f"SKIPPED — {task.title} for {pet.name}: {reason}")
         return "\n".join(lines) if lines else "No tasks to schedule."
+    
+    @staticmethod
+    def sort_by_time(tasks: List[Task]) -> List[Task]:
+        """Return tasks sorted by preferred_time ('HH:MM'); untimed tasks go last."""
+        return sorted(tasks, key=lambda t: t.preferred_time or "99:99")
+
+    @staticmethod
+    def filter_tasks(owner: Owner, completed: Optional[bool] = None,
+                     pet_name: Optional[str] = None) -> List[Task]:
+        """Return the owner's tasks filtered by completion status and/or pet name."""
+        result = []
+        for pet, task in owner.get_tasks_with_pets():
+            if completed is not None and task.completed != completed:
+                continue
+            if pet_name is not None and pet.name != pet_name:
+                continue
+            result.append(task)
+        return result
+
+    @staticmethod
+    def detect_conflicts(owner: Owner) -> List[str]:
+        """Return warning strings for tasks sharing the same preferred_time."""
+        by_time = {}
+        for pet, task in owner.get_tasks_with_pets():
+            if task.preferred_time:
+                by_time.setdefault(task.preferred_time, []).append((pet, task))
+
+        warnings = []
+        for slot, group in sorted(by_time.items()):
+            if len(group) > 1:
+                names = ", ".join(f"{t.title} ({p.name})" for p, t in group)
+                warnings.append(f"Conflict at {slot}: {names}")
+        return warnings
+
+

@@ -44,62 +44,82 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
+Output from running `python main.py`:
+
+```
 Daily plan for Jordan's pets:
 
-08:00 — Morning walk (30 min) for Biscuit [priority: high] — high priority owner asked for ~08:00.
-09:00 — Feeding (10 min) for Biscuit [priority: high] — high priority, owner asked for ~09:00.
-09:10 — Feeding (10 min) for Mochi [priority: high] — high priority, slotted in next available time.
-09:20 — Litter cleanup (15 min) for Mochi [priority: medium] — medium priority, slotted in next available time.
-09:35 — Enrichment play (20 min) for Biscuit [priority: low] — low priority, slotted in next available time.
+08:00 — Feeding (10 min) for Mochi [priority: high] — high priority, owner asked for ~08:00.
+08:10 — Morning walk (30 min) for Biscuit [priority: high] — high priority, owner asked for ~08:00.
+18:00 — Evening walk (30 min) for Biscuit [priority: high] — high priority, owner asked for ~18:00.
+18:30 — Litter cleanup (15 min) for Mochi [priority: medium] — medium priority, slotted in next available time.
+18:45 — Enrichment play (20 min) for Biscuit [priority: low] — low priority, slotted in next available time.
 
-Total scheduled: 85 min (5 tasks, 0 skipped)
+--- Tasks sorted by time ---
+  08:00  Morning walk
+  08:00  Feeding
+  18:00  Evening walk
+  --:--  Enrichment play
+  --:--  Litter cleanup
+
+--- High-detail filters ---
+Biscuit's tasks: ['Evening walk', 'Morning walk', 'Enrichment play']
+
+--- Conflicts ---
+Conflict at 08:00: Morning walk (Biscuit), Feeding (Mochi)
+
+--- Recurring task demo ---
+Completed 'Morning walk'. Tasks went 3 -> 4. Next due: 2026-06-30
+```
 
 
 ## 🧪 Testing PawPal+
 
+Run the full test suite with:
+
 ```bash
-# Run the full test suite:
 python -m pytest
-========================= test session starts ==========================
+```
+
+The suite covers task completion, task counting, schedule ordering by priority,
+time-budget skipping, chronological sorting, untimed-task ordering, daily/weekly
+recurrence, conflict detection, filtering by pet, and the empty-pet edge case.
+
+```
+============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
 rootdir: C:\Users\shire\Documents\CodePathOrg\AI\ai110-module2show-pawpal-starter
 plugins: anyio-4.11.0
-collected 4 items                                                       
+collected 12 items
 
-tests\test_pawpal.py ....                                         [100%]
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [  8%]
+tests/test_pawpal.py::test_adding_task_increases_pet_task_count PASSED   [ 16%]
+tests/test_pawpal.py::test_scheduler_orders_high_priority_first PASSED   [ 25%]
+tests/test_pawpal.py::test_scheduler_skips_tasks_that_do_not_fit PASSED  [ 33%]
+tests/test_pawpal.py::test_sort_by_time_orders_chronologically PASSED    [ 41%]
+tests/test_pawpal.py::test_untimed_tasks_sort_last PASSED                [ 50%]
+tests/test_pawpal.py::test_completing_daily_task_creates_next_day_occurrence PASSED [ 58%]
+tests/test_pawpal.py::test_completing_weekly_task_advances_one_week PASSED [ 66%]
+tests/test_pawpal.py::test_detect_conflicts_flags_same_time PASSED       [ 75%]
+tests/test_pawpal.py::test_no_conflict_when_times_differ PASSED          [ 83%]
+tests/test_pawpal.py::test_filter_tasks_by_pet_name PASSED               [ 91%]
+tests/test_pawpal.py::test_pet_with_no_tasks_produces_empty_plan PASSED  [100%]
 
-========================== 4 passed in 0.11s ===========================
-
-# Run with coverage:
-pytest --cov
-
-python -m pytest -v
-========================= test session starts ==========================
-platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\shire\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\python.exe
-cachedir: .pytest_cache
-rootdir: C:\Users\shire\Documents\CodePathOrg\AI\ai110-module2show-pawpal-starter
-plugins: anyio-4.11.0
-collected 4 items                                                       
-
-tests/test_pawpal.py::test_mark_complete_changes_status PASSED    [ 25%]
-tests/test_pawpal.py::test_adding_task_increases_pet_task_count PASSED [ 50%]
-tests/test_pawpal.py::test_scheduler_orders_high_priority_first PASSED [ 75%]
-tests/test_pawpal.py::test_scheduler_skips_tasks_that_do_not_fit PASSED [100%]
-
-========================== 4 passed in 0.04s ===========================
-
+============================= 12 passed in 0.04s ==============================
 ```
+
+**Confidence level:** ⭐⭐⭐⭐☆ (4/5) — core scheduling, recurrence, and conflict
+logic are well covered. Next I'd add tests for overlapping-duration conflicts and
+multi-day recurrence streaks.
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()` | Sorts by `preferred_time` ("HH:MM"); untimed tasks go last |
+| Filtering | `Scheduler.filter_tasks()` | Filter by pet name and/or completion status |
+| Conflict handling | `Scheduler.detect_conflicts()` | Warns on tasks sharing the same `preferred_time` (exact match) |
+| Recurring tasks | `Task.next_occurrence()`, `Pet.complete_task()` | Completing a daily/weekly task creates the next occurrence via `timedelta` |
 
 ## 📸 Demo Walkthrough
 

@@ -23,13 +23,21 @@ Yes. My skeleton had Scheduler return a raw list, but during implementation I ad
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints: total time available for the day, each
+task's priority (high/medium/low), and the owner's optional preferred start time for a
+task. Priority matters most — high-priority care (walks, feeding, meds) should never be
+dropped before low-priority enrichment. Time available is the hard limit that decides
+how many tasks fit, and preferred_time is a soft preference used as a tie-breaker so
+fixed-time tasks land in their slot.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+My conflict detector only flags tasks that share the exact same preferred_time (e.g.
+two tasks both at "08:00"). It does not detect overlapping durations — a 30-min task at
+08:00 and another at 08:15 won't be flagged even though they collide. I chose exact-match
+because it is simple, fast, and returns a clear warning string without crashing; full
+overlap detection would need start+end interval math for every pair of tasks. For a
+personal pet-care planner, exact-time clashes are the common and important case.
 
 ---
 
@@ -74,3 +82,17 @@ Yes. My skeleton had Scheduler return a raw list, but during implementation I ad
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+## 5. Smarter Scheduling
+
+**b. Tradeoffs**
+My conflict detector only flags tasks that share the exact same preferred_time (e.g. two tasks both at "08:00"). It does not detect *overlapping durations* — a 30-min task at 08:00 and another at 08:15 won't be flagged even though they collide.I chose exact-match because it's simple, fast, and returns a clear warning without crashing; full overlap detection would need start+end interval math for every pair.For a personal  pet-care planner, exact-time clashes are the common, important case.
+
+| Feature | Method(s) | Notes |
+|---------|-----------|-------|
+| Task sorting | `Scheduler.sort_by_time()` | Sorts by preferred_time ("HH:MM"); untimed tasks go last |
+| Filtering | `Scheduler.filter_tasks()` | Filter by pet name and/or completion status |
+| Conflict handling | `Scheduler.detect_conflicts()` | Warns on tasks sharing the same preferred_time |
+| Recurring tasks | `Task.next_occurrence()`, `Pet.complete_task()` | Completing a daily/weekly task creates the next occurrence via timedelta |
+
+
